@@ -7,18 +7,13 @@ class IsOwnerOrAdminOrReadOnly(permissions.BasePermission):
                 or request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return (obj.author == request.user
+        return (request.method in permissions.SAFE_METHODS
+                or obj.author == request.user
                 or request.user.is_superuser)
 
 
 class IsCurrentUserOrAdminOrReadOnly(permissions.BasePermission):
-    """
-    Для неавторизованных пользователей доступ только на просмотр содержимого.
-    """
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return (obj.id == request.user
+        return (request.method in permissions.SAFE_METHODS
+                or obj.id == request.user
                 or request.user.is_superuser)

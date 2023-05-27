@@ -129,3 +129,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 5,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
+
+LENGTH_OF_RECIPES = 200
+LENGTH_OF_NAME = 150

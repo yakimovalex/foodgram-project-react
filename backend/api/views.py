@@ -1,18 +1,21 @@
 from api.filters import IngredientSearchFilter, RecipeFilter
 from api.paginations import ApiPagination
-from api.permissions import IsOwnerOrAdminOrReadOnly
+from api.permissions import (IsCurrentUserOrAdminOrReadOnly,
+                             IsOwnerOrAdminOrReadOnly)
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeListSerializer, RecipeWriteSerializer,
                              ShoppingCartSerializer, TagSerializer)
 from api.services import shopping_cart
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (Favorite, Ingredient, Recipe, ShoppingCart, Tag,
-                            User)
+from recipes.models import (Favorite, Follow, Ingredient, Recipe, ShoppingCart,
+                            Tag, User)
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
+from .serializers import FollowSerializer, UserSerializer
 
 
 class TagViewSet(mixins.ListModelMixin,
@@ -120,3 +123,44 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return shopping_cart(self, request, author)
         return Response('Список покупок пустой.',
                         status=status.HTTP_404_NOT_FOUND)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    permission_classes = (IsCurrentUserOrAdminOrReadOnly, )
+    pagination_class = ApiPagination
+    serializer_class = UserSerializer
+
+    @action(detail=True,
+            methods=['post', 'delete'],
+            permission_classes=[IsAuthenticated])
+    def subscribe(self, request, *args, **kwargs):
+        author = get_object_or_404(User, id=self.kwargs.get('pk'))
+        user = self.request.user
+        if request.method == 'POST':
+            serializer = FollowSerializer(
+                data=request.data,
+                context={'request': request, 'author': author})
+            if serializer.is_valid(raise_exception=True):
+                serializer.save(author=author, user=user)
+                return Response({'Подписка оформлена': serializer.data},
+                                status=status.HTTP_201_CREATED)
+            return Response({'errors': 'Объект не найден'},
+                            status=status.HTTP_404_NOT_FOUND)
+        if Follow.objects.filter(author=author, user=user).exists():
+            Follow.objects.get(author=author).delete()
+            return Response('Подписка отменена',
+                            status=status.HTTP_204_NO_CONTENT)
+        return Response({'errors': 'Объект не найден'},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False,
+            methods=['get'],
+            permission_classes=[IsAuthenticated])
+    def subscriptions(self, request):
+        follows = Follow.objects.filter(user=self.request.user)
+        pages = self.paginate_queryset(follows)
+        serializer = FollowSerializer(pages,
+                                      many=True,
+                                      context={'request': request})
+        return self.get_paginated_response(serializer.data)

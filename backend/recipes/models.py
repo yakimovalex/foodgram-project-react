@@ -1,19 +1,23 @@
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Q
 from users.models import User
+
+from .validator import check_name
 
 
 class Ingredient(models.Model):
     """Ингридиенты для рецептов."""
     name = models.CharField(
         verbose_name='Название ингредиента',
-        max_length=200,
+        max_length=settings.LENGTH_OF_RECIPES,
         db_index=True,
+        validators=[check_name],
         help_text='Введите название ингредиента')
     measurement_unit = models.CharField(
         verbose_name='Единица измерения',
-        max_length=200,
+        max_length=settings.LENGTH_OF_RECIPES,
         help_text='Введите единицу измерения')
 
     class Meta:
@@ -26,28 +30,19 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    """Тэги для рецептов с предустановленным выбором."""
-    GREEN = '09db4f'
-    ORANGE = 'fa6a02'
-    PURPLE = 'b813d1'
-    COLOR_TAG = [
-        (GREEN, 'Зеленый'),
-        (ORANGE, 'Оранжевый'),
-        (PURPLE, 'Фиолетовый')
-    ]
     name = models.CharField(
         verbose_name='Название тега',
-        max_length=200, unique=True,
+        max_length=settings.LENGTH_OF_RECIPES, unique=True,
+        validators=[check_name],
         help_text='Введите название тега')
     color = models.CharField(
         verbose_name='Цвет в HEX',
         max_length=7, unique=True,
-        default=GREEN,
-        choices=COLOR_TAG,
-        help_text='Выберите цвет')
+        validators=[check_name],
+        help_text='Выберите цвет, например #49B64E')
     slug = models.SlugField(
         verbose_name='Уникальный слаг',
-        max_length=200, unique=True,
+        max_length=settings.LENGTH_OF_RECIPES, unique=True,
         help_text='Укажите уникальный слаг')
 
     class Meta:
@@ -59,19 +54,15 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    """
-    Модель для рецептов.
-    У автора не может быть создано более одного рецепта с одним именем.
-    """
     author = models.ForeignKey(
         User,
         verbose_name='Автор рецепта',
         on_delete=models.CASCADE,
         help_text='Автор рецепта')
-    ingredients = models.ManyToManyField(
-        Ingredient,
-        through='IngredientRecipe',
-        verbose_name='Ингредиент')
+#    ingredients = models.ManyToManyField(
+#        Ingredient,
+#        through='IngredientRecipe',
+#        verbose_name='Ингредиент')
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Название тега',
@@ -81,8 +72,9 @@ class Recipe(models.Model):
         help_text='Опишите приготовление рецепта')
     name = models.CharField(
         verbose_name='Название рецепта',
-        max_length=200,
+        max_length=settings.LENGTH_OF_RECIPES,
         help_text='Введите название рецепта',
+        validators=[check_name],
         db_index=True)
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',
@@ -108,11 +100,6 @@ class Recipe(models.Model):
 
 
 class IngredientRecipe(models.Model):
-    """
-    Ингридиенты для рецепта.
-    Промежуточная модель между таблиц:
-      Recipe и Ingredient
-    """
     recipe = models.ForeignKey(
         Recipe,
         related_name='recipe_ingredients',
@@ -122,6 +109,7 @@ class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
+        related_name='+',
         on_delete=models.CASCADE,
         help_text='Укажите ингредиенты')
     amount = models.PositiveSmallIntegerField(
@@ -143,19 +131,13 @@ class IngredientRecipe(models.Model):
 
 
 class ShoppingCart(models.Model):
-    """
-    Список покупок пользователя.
-    Ограничения уникальности полей:
-      author, recipe.
-    """
     author = models.ForeignKey(
         User,
-        related_name='shopping_cart',
         on_delete=models.CASCADE,
         verbose_name='Пользователь')
     recipe = models.ForeignKey(
         Recipe,
-        related_name='shopping_cart',
+        related_name='+',
         verbose_name='Рецепт для приготовления',
         on_delete=models.CASCADE,
         help_text='Выберите рецепт для приготовления')
@@ -172,19 +154,14 @@ class ShoppingCart(models.Model):
 
 
 class Favorite(models.Model):
-    """
-    Список покупок пользователя.
-    Ограничения уникальности полей:
-      author, recipe.
-    """
     author = models.ForeignKey(
         User,
-        related_name='favorite',
+
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта')
     recipe = models.ForeignKey(
         Recipe,
-        related_name='favorite',
+        related_name='+',
         on_delete=models.CASCADE,
         verbose_name='Рецепты')
 
@@ -200,11 +177,6 @@ class Favorite(models.Model):
 
 
 class Follow(models.Model):
-    """
-    Подписки на авторов рецептов.
-    Ограничения уникальности полей:
-      author, user.
-    """
     user = models.ForeignKey(
         User,
         verbose_name='Пользователь',
