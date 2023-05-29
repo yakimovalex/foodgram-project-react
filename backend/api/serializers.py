@@ -1,11 +1,11 @@
 import api.serializers
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (Favorite, Follow, Ingredient, IngredientRecipe,
-                            Recipe, ShoppingCart, Tag)
+from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+                            ShoppingCart, Tag)
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
-from users.models import User
+from users.models import Follow, User
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -165,11 +165,13 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return ingredients
 
     def add_tags_ingredients(self, ingredients, tags, model):
+        ingredients_list = []
         for ingredient in ingredients:
-            IngredientRecipe.objects.bulk_create(
+            ingredients_list.append(
                 recipe=model,
                 ingredient=ingredient['id'],
                 amount=ingredient['amount'])
+        IngredientRecipe.objects.bulk_create(ingredients_list)
         model.tags.set(tags)
 
     def create(self, validated_data):

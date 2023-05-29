@@ -1,10 +1,9 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import F, Q
 from users.models import User
 
-from .validator import check_name
+from .validator import check_hex, check_name
 
 
 class Ingredient(models.Model):
@@ -38,7 +37,7 @@ class Tag(models.Model):
     color = models.CharField(
         verbose_name='Цвет в HEX',
         max_length=7, unique=True,
-        validators=[check_name],
+        validators=[check_hex],
         help_text='Выберите цвет, например #49B64E')
     slug = models.SlugField(
         verbose_name='Уникальный слаг',
@@ -59,10 +58,6 @@ class Recipe(models.Model):
         verbose_name='Автор рецепта',
         on_delete=models.CASCADE,
         help_text='Автор рецепта')
-#    ingredients = models.ManyToManyField(
-#        Ingredient,
-#        through='IngredientRecipe',
-#        verbose_name='Ингредиент')
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Название тега',
@@ -131,7 +126,7 @@ class IngredientRecipe(models.Model):
 
 
 class ShoppingCart(models.Model):
-    author = models.ForeignKey(
+    author_recipe = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         verbose_name='Пользователь')
@@ -146,7 +141,7 @@ class ShoppingCart(models.Model):
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Список покупок'
         constraints = [models.UniqueConstraint(
-            fields=['author', 'recipe'],
+            fields=['author_recipe', 'recipe'],
             name='unique_cart')]
 
     def __str__(self):
@@ -154,9 +149,8 @@ class ShoppingCart(models.Model):
 
 
 class Favorite(models.Model):
-    author = models.ForeignKey(
+    author_recipe = models.ForeignKey(
         User,
-
         on_delete=models.CASCADE,
         verbose_name='Автор рецепта')
     recipe = models.ForeignKey(
@@ -169,37 +163,8 @@ class Favorite(models.Model):
         verbose_name = 'Избранные рецепты'
         verbose_name_plural = 'Избранные рецепты'
         constraints = [models.UniqueConstraint(
-            fields=['author', 'recipe'],
+            fields=['author_recipe', 'recipe'],
             name='unique_favorite')]
 
     def __str__(self):
         return f'{self.recipe}'
-
-
-class Follow(models.Model):
-    user = models.ForeignKey(
-        User,
-        verbose_name='Пользователь',
-        related_name='follower',
-        on_delete=models.CASCADE,
-        help_text='Текущий пользователь')
-    author = models.ForeignKey(
-        User,
-        verbose_name='Подписка',
-        related_name='followed',
-        on_delete=models.CASCADE,
-        help_text='Подписаться на автора рецепта(ов)')
-
-    class Meta:
-        verbose_name = 'Мои подписки'
-        verbose_name_plural = 'Мои подписки'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'author'],
-                name='unique_following'),
-            models.CheckConstraint(
-                check=~Q(user=F('author')),
-                name='no_self_following')]
-
-    def __str__(self):
-        return f'Пользователь {self.user} подписан на {self.author}'

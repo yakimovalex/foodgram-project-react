@@ -1,10 +1,14 @@
 from django_filters.rest_framework import FilterSet, filters
-from recipes.models import Recipe, Tag, User
+from recipes.models import Ingredient, Recipe, Tag, User
 from rest_framework.filters import SearchFilter
 
 
 class IngredientSearchFilter(SearchFilter):
     search_param = 'name'
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
 
 
 class RecipeFilter(FilterSet):
@@ -23,13 +27,3 @@ class RecipeFilter(FilterSet):
     class Meta:
         model = Recipe
         fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
-
-    def filter_is_favorited(self, queryset, name, value):
-        if self.request.user.is_authenticated and value:
-            return queryset.filter(favorite__author=self.request.user)
-        return queryset
-
-    def filter_is_in_shopping_cart(self, queryset, name, value):
-        if self.request.user.is_authenticated and value:
-            return queryset.filter(shopping_cart__author=self.request.user)
-        return queryset
