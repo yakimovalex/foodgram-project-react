@@ -13,8 +13,8 @@ def check_name(value):
 
 
 def check_hex(value):
-    if not re.match(r'/^#[0-9A-F]{6}$/i', value):
+    if not re.match(r'^#([A-Fa-f0-9]{3,6})$', value):
         raise ValidationError(
-            _('is not hex'),
+            _('is not hex-code'),
             code='invalid_name'
         )

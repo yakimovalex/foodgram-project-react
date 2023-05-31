@@ -1,18 +1,19 @@
 import api.serializers
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
-                            ShoppingCart, Tag)
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
+
 from users.models import Follow, User
+from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+                            ShoppingCart, Tag)
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='recipe.name', read_only=True)
     image = serializers.ImageField(source='recipe.image', read_only=True)
     id = serializers.PrimaryKeyRelatedField(source='recipe', read_only=True)
-    coocking_time = serializers.IntegerField(
+    cooking_time = serializers.IntegerField(
         source='recipe.cooking_time', read_only=True)
 
     class Meta:
@@ -24,7 +25,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
     name = serializers.ReadOnlyField(source='recipe.name', read_only=True)
     image = serializers.ImageField(source='recipe.image', read_only=True)
     id = serializers.PrimaryKeyRelatedField(source='recipe', read_only=True)
-    coocking_time = serializers.IntegerField(
+    cooking_time = serializers.IntegerField(
         source='recipe.cooking_time', read_only=True)
 
     class Meta:
@@ -70,7 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
         if not user.is_anonymous:
-            return Follow.objects.filter(user=user, author=obj).exists()
+            return Follow.objects.filter(author=obj.author).exists()
         return False
 
 
@@ -190,6 +191,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
 
 class RecipeMiniSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'cooking_time', 'image',)
@@ -221,7 +224,10 @@ class FollowSerializer(serializers.ModelSerializer):
         limit = request.GET.get('recipes_limit')
         recipes = Recipe.objects.filter(author=obj.author)
         if limit and limit.isdigit():
-            recipes = recipes[:int(limit)]
+            try:
+                recipes = recipes[:int(limit)]
+            except ValueError:
+                raise ValueError('Неверно задан параметр количества рецептов')
         return api.serializers.RecipeMiniSerializer(recipes, many=True).data
 
     def get_recipes_count(self, obj):
