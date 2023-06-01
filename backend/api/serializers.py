@@ -1,9 +1,9 @@
-import api.serializers
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 
+import api.serializers
 from users.models import Follow, User
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
@@ -71,7 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
         if not user.is_anonymous:
-            return Follow.objects.filter(author=obj.author).exists()
+            return Follow.objects.filter(followed=obj.author).exists()
         return False
 
 
@@ -93,13 +93,13 @@ class RecipeListSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
         if not user.is_anonymous:
-            return Favorite.objects.filter(recipe=obj).exists()
+            return Favorite.objects.filter(recipe_ingredients=obj).exists()
         return False
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         if not user.is_anonymous:
-            return ShoppingCart.objects.filter(recipe=obj).exists()
+            return ShoppingCart.objects.filter(recipe_ingredients=obj).exists()
         return False
 
 
@@ -217,7 +217,7 @@ class FollowSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         if user.is_anonymous or (user == obj):
             return False
-        return user.subscriptions.filter(author=obj).exists()
+        return user.subscriptions.filter(user=user, author=obj).exists()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -237,8 +237,8 @@ class FollowSerializer(serializers.ModelSerializer):
         author = self.context.get('author')
         user = self.context.get('request').user
         if Follow.objects.filter(
-                author=author,
-                user=user).exists():
+                followed=author,
+                follower=user).exists():
             raise ValidationError(
                 detail='Вы уже подписаны на этого пользователя!',
                 code=status.HTTP_400_BAD_REQUEST)
