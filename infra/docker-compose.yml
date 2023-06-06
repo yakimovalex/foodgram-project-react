@@ -9,7 +9,7 @@ services:
       - ./.env
 
   web:
-    image: yaalex/foodgram:latest
+    image: yaalex/foodgrambackend:latest
     restart: always
     volumes:
       - static_value:/app/static/
@@ -38,6 +38,7 @@ services:
         - media_value:/var/html/media/
       depends_on:
         - web
+        - frontend
       container_name: foodgram_nginx
 
 volumes:
