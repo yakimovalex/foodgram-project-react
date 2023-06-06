@@ -15,4 +15,3 @@
  [Nginx](https://docs.nginx.com/) 1.21 ([Ru](https://nginx.org/ru/docs/)).**
 
 ## Запуск
-
