@@ -61,6 +61,9 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
+            cd infra
+            sudo docker pull yaalex/web
+            sudo docker pull yaalex/frontend
             sudo rm -f .env        
             sudo touch .env
             sudo chmod 666 .env
@@ -73,8 +76,8 @@ jobs:
             sudo echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             
             sudo docker compose stop
-            sudo docker compose rm backend
-            sudo docker compose pull backend
+            sudo docker compose rm web
+            sudo docker compose pull web
             sudo docker compose rm frontend
             sudo docker compose pull frontend
             sudo docker compose up -d --build
