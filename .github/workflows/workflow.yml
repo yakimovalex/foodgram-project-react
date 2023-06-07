@@ -64,7 +64,6 @@ jobs:
             sudo docker pull yaalex/web
             sudo docker pull yaalex/frontend
             cd infra
-            sudo rm -f .env
             sudo touch .env
             sudo chmod 666 .env
             sudo echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
