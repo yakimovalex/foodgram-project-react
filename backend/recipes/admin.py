@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from users.models import Follow
+
 from .models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                      ShoppingCart, Tag)
 
@@ -17,15 +18,15 @@ class FollowAdmin(admin.ModelAdmin):
 
 
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ('author', 'recipe')
-    list_filter = ('author',)
-    search_fields = ('author',)
+    list_display = ('author_recipe', 'recipe')
+    list_filter = ('author_recipe',)
+    search_fields = ('author_recipe',)
 
 
 class ShoppingCartAdmin(admin.ModelAdmin):
-    list_display = ('author', 'recipe')
-    list_filter = ('author',)
-    search_fields = ('author',)
+    list_display = ('author_recipe', 'recipe')
+    list_filter = ('author_recipe',)
+    search_fields = ('author_recipe',)
 
 
 class IngredientRecipeAdmin(admin.ModelAdmin):
@@ -34,11 +35,11 @@ class IngredientRecipeAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'author', 'name', 'pub_date', 'in_favorite', )
     search_fields = ('name',)
     list_filter = ('pub_date', 'author', 'name', 'tags')
-    filter_horizontal = ('ingredients',)
     empty_value_display = '-пусто-'
     inlines = [IngredientsInline]
 
@@ -60,7 +61,6 @@ class IngredientAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(IngredientRecipe, IngredientRecipeAdmin)

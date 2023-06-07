@@ -1,6 +1,9 @@
 # Foodgram - Продуктовый помощник
 
 http://foodg.sytes.net/
+Email-адрес: admin@ya.ru
+Логин: admin
+Password: admin
 
 
 ## Описание проекта Foodgram

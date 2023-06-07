@@ -4,9 +4,9 @@ from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 
 import api.serializers
-from users.models import Follow, User
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
+from users.models import Follow, User
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -71,7 +71,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
         if not user.is_anonymous:
-            return Follow.objects.filter(followed=obj.author).exists()
+            return Follow.objects.filter(user=user, author=obj).exists()
         return False
 
 
@@ -93,15 +93,13 @@ class RecipeListSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
         if not user.is_anonymous:
-            return user.favorites.objects.filter(
-                recipe_ingredients=obj).exists()
+            return Favorite.objects.filter(recipe=obj).exists()
         return False
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         if not user.is_anonymous:
-            return user.shopping_cart.objects.filter(
-                recipe_ingredients=obj).exists()
+            return ShoppingCart.objects.filter(recipe=obj).exists()
         return False
 
 
@@ -239,8 +237,8 @@ class FollowSerializer(serializers.ModelSerializer):
         author = self.context.get('author')
         user = self.context.get('request').user
         if Follow.objects.filter(
-                followed=author,
-                follower=user).exists():
+                author=author,
+                user=user).exists():
             raise ValidationError(
                 detail='Вы уже подписаны на этого пользователя!',
                 code=status.HTTP_400_BAD_REQUEST)

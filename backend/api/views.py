@@ -9,13 +9,13 @@ from api.filters import IngredientSearchFilter, RecipeFilter
 from api.paginations import ApiPagination
 from api.permissions import (IsCurrentUserOrAdminOrReadOnly,
                              IsOwnerOrAdminOrReadOnly)
-from api.serializers import (FavoriteSerializer, IngredientSerializer,
-                             RecipeListSerializer, RecipeWriteSerializer,
-                             ShoppingCartSerializer, TagSerializer,
-                             FollowSerializer, UserSerializer)
+from api.serializers import (FavoriteSerializer, FollowSerializer,
+                             IngredientSerializer, RecipeListSerializer,
+                             RecipeWriteSerializer, ShoppingCartSerializer,
+                             TagSerializer, UserSerializer)
 from api.services import shopping_cart
-from recipes.models import (Favorite, Ingredient, Recipe, ShoppingCart,
-                            Tag, User)
+from recipes.models import (Favorite, Ingredient, Recipe, ShoppingCart, Tag,
+                            User)
 from users.models import Follow
 
 
