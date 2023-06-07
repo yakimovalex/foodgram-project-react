@@ -3,6 +3,7 @@ Django==2.2.19
 django-filter==21.1
 djangorestframework==3.12.4
 drf-base64==2.0
+drf-extra-fields==3.4.1
 exceptiongroup==1.1.1
 flake8==5.0.4
 flake8-broken-line==0.6.0
