@@ -61,6 +61,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
+            sudo docker pull yaalex/web
+            sudo docker pull yaalex/frontend
             cd infra
             sudo rm -f .env
             sudo touch .env
