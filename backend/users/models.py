@@ -3,19 +3,15 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import F, Q
 
-from recipes.validator import check_name
-
 
 class User(AbstractUser):
     username = models.CharField('Логин',
                                 max_length=settings.LENGTH_OF_NAME,
-                                validators=[check_name], unique=True)
+                                unique=True)
     first_name = models.CharField('Имя',
-                                  max_length=settings.LENGTH_OF_NAME,
-                                  validators=[check_name])
+                                  max_length=settings.LENGTH_OF_NAME)
     last_name = models.CharField('Фамилия',
-                                 max_length=settings.LENGTH_OF_NAME,
-                                 validators=[check_name])
+                                 max_length=settings.LENGTH_OF_NAME)
     email = models.EmailField('email-адрес', unique=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
