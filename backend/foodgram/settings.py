@@ -9,7 +9,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='y)17wd8i$e!$$p-jqmv7pzuc9vojvpy$$n
 DEBUG = bool(os.environ.get('DEBUG'))
 DEBUG = os.getenv('DEBUG', default=True)
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default=['*'])
+ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default=['*'])
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
