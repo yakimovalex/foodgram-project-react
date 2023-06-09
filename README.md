@@ -84,10 +84,10 @@ sudo docker-compose exec web python manage.py makemigrations
 sudo docker-compose exec web python manage.py migrate --noinput
 sudo docker-compose exec web python manage.py createsuperuser
 sudo docker-compose exec web python manage.py collectstatic --no-input
-Дополнительно можно наполнить DB ингредиентами и тэгами:
+Дополнительно можно наполнить DB ингредиентами и #тэгами:
 
-sudo docker-compose exec web python manage.py load_tags
-sudo docker-compose exec web python manage.py load_ingrs
+#sudo docker-compose exec web python manage.py load_tags
+sudo docker-compose exec web python manage.py importdata
 На этом всё, продуктовый помощник запущен, можно наполнять его рецептами и делится с друзьями!
 
 Запуск проекта в Docker на localhost
